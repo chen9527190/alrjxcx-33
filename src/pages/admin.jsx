@@ -92,6 +92,10 @@ export default function Admin(props) {
   const [editingCategory, setEditingCategory] = useState(null);
   const [editingTag, setEditingTag] = useState(null);
 
+  // 图片和链接管理
+  const [imageUrls, setImageUrls] = useState(['']);
+  const [textLinks, setTextLinks] = useState([{ name: '', url: '' }]);
+
   // 发布新文章
   const handlePublishArticle = () => {
     if (!newArticle.title.trim()) {
@@ -250,6 +254,40 @@ export default function Admin(props) {
     }
   };
 
+  // 编辑分类
+  const editCategory = (oldCategory, newCategory) => {
+    if (newCategory.trim() && !categories.includes(newCategory.trim())) {
+      setCategories(prev => prev.map(c => c === oldCategory ? newCategory.trim() : c));
+      setEditingCategory(null);
+      toast({
+        title: '修改成功',
+        description: '分类已更新',
+        variant: 'default'
+      });
+    }
+  };
+
+  // 删除分类
+  const removeCategory = (category) => {
+    // 检查是否有文章使用该分类
+    const articlesUsingCategory = articles.filter(article => article.category === category);
+    if (articlesUsingCategory.length > 0) {
+      toast({
+        title: '删除失败',
+        description: `有 ${articlesUsingCategory.length} 篇文章使用此分类，请先修改文章分类`, 
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    setCategories(prev => prev.filter(c => c !== category));
+    toast({
+      title: '删除成功',
+      description: '分类已删除',
+      variant: 'default'
+    });
+  };
+
   // 添加图片URL
   const addImageUrl = () => {
     setImageUrls(prev => [...prev, '']);
@@ -318,12 +356,23 @@ export default function Admin(props) {
     }
   };
 
-  // 删除分类
-  const removeCategory = category => {
-    setCategories(prev => prev.filter(c => c !== category));
+  // 删除标签
+  const removeTag = (tag) => {
+    // 检查是否有文章使用该标签
+    const articlesUsingTag = articles.filter(article => article.tags?.includes(tag));
+    if (articlesUsingTag.length > 0) {
+      toast({
+        title: '删除失败',
+        description: `有 ${articlesUsingTag.length} 篇文章使用此标签，请先修改文章标签`, 
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    setTags(prev => prev.filter(t => t !== tag));
     toast({
       title: '删除成功',
-      description: '分类已删除',
+      description: '标签已删除',
       variant: 'default'
     });
   };
@@ -339,6 +388,45 @@ export default function Admin(props) {
         variant: 'default'
       });
     }
+  };
+
+  // 编辑标签
+  const editTag = (oldTag, newTag) => {
+    if (newTag.trim() && !tags.includes(newTag.trim())) {
+      setTags(prev => prev.map(t => t === oldTag ? newTag.trim() : t));
+      // 更新所有使用该标签的文章
+      setArticles(prev => prev.map(article => ({
+        ...article,
+        tags: article.tags?.map(t => t === oldTag ? newTag.trim() : t) || []
+      })));
+      setEditingTag(null);
+      toast({
+        title: '修改成功',
+        description: '标签已更新',
+        variant: 'default'
+      });
+    }
+  };
+
+  // 删除标签
+  const removeTag = (tag) => {
+    // 检查是否有文章使用该标签
+    const articlesUsingTag = articles.filter(article => article.tags?.includes(tag));
+    if (articlesUsingTag.length > 0) {
+      toast({
+        title: '删除失败',
+        description: `有 ${articlesUsingTag.length} 篇文章使用此标签，请先修改文章标签`, 
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    setTags(prev => prev.filter(t => t !== tag));
+    toast({
+      title: '删除成功',
+      description: '标签已删除',
+      variant: 'default'
+    });
   };
 
   // 删除标签
