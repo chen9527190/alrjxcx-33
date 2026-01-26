@@ -15,38 +15,66 @@ export default function Admin(props) {
   const [articles, setArticles] = useState([{
     id: 1,
     title: 'Photoshop 2024 安装包',
+    content: '包含最新版本的Photoshop安装包和破解教程...',
+    coverImage: 'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400',
     views: 1250,
     realViews: 890,
     likes: 89,
     status: 'published',
-    isDaily: true
+    isDaily: true,
+    tags: ['设计', '工具'],
+    category: '软件资源',
+    cloudLinks: [
+      { name: '百度网盘', url: 'https://pan.baidu.com/s/xxx', password: '1234' },
+      { name: '阿里云盘', url: 'https://www.aliyundrive.com/s/xxx', password: '' }
+    ]
   }, {
     id: 2,
     title: '前端开发教程',
+    content: '从零开始学习前端开发...',
+    coverImage: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400',
     views: 890,
     realViews: 567,
     likes: 67,
     status: 'published',
-    isDaily: false
+    isDaily: false,
+    tags: ['前端', '教程'],
+    category: '学习资料',
+    cloudLinks: []
   }, {
     id: 3,
     title: '免费字体合集',
+    content: '精选免费商用字体合集...',
+    coverImage: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400',
     views: 2100,
     realViews: 1234,
     likes: 156,
     status: 'draft',
-    isDaily: false
+    isDaily: false,
+    tags: ['设计', '字体'],
+    category: '设计资源',
+    cloudLinks: []
   }]);
 
   // 新文章表单数据
   const [newArticle, setNewArticle] = useState({
     title: '',
     content: '',
-    status: 'draft'
+    coverImage: '',
+    status: 'draft',
+    tags: [],
+    category: '',
+    cloudLinks: [{ name: '', url: '', password: '' }]
   });
 
   // 编辑文章数据
   const [editingArticle, setEditingArticle] = useState(null);
+
+  // 标签和分类管理
+  const [categories, setCategories] = useState(['软件资源', '学习资料', '设计资源', '工具插件', '模板素材']);
+  const [tags, setTags] = useState(['前端', '设计', '工具', '教程', '免费', '资源', '软件', '字体', '插件']);
+  const [newCategory, setNewCategory] = useState('');
+  const [newTag, setNewTag] = useState('');
 
   // 发布新文章
   const handlePublishArticle = () => {
@@ -66,28 +94,179 @@ export default function Admin(props) {
       });
       return;
     }
-    const newArticleData = {
-      id: articles.length + 1,
-      title: newArticle.title,
-      content: newArticle.content,
-      views: 0,
-      realViews: 0,
-      likes: 0,
-      status: newArticle.status,
-      isDaily: false,
-      createTime: new Date().toISOString().split('T')[0]
-    };
-    setArticles([...articles, newArticleData]);
+
+    // 过滤有效的网盘链接
+    const validCloudLinks = newArticle.cloudLinks.filter(link => 
+      link.name.trim() && link.url.trim()
+    );
+
+    if (editingArticle) {
+      // 编辑文章
+      setArticles(prev => prev.map(article => 
+        article.id === editingArticle.id 
+          ? { 
+              ...newArticle, 
+              id: editingArticle.id,
+              views: editingArticle.views,
+              realViews: editingArticle.realViews,
+              likes: editingArticle.likes,
+              cloudLinks: validCloudLinks
+            }
+          : article
+      ));
+      setEditingArticle(null);
+      toast({
+        title: '编辑成功',
+        description: '文章已更新',
+        variant: 'default'
+      });
+    } else {
+      // 发布新文章
+      const newArticleData = {
+        id: articles.length + 1,
+        title: newArticle.title,
+        content: newArticle.content,
+        coverImage: newArticle.coverImage,
+        views: 0,
+        realViews: 0,
+        likes: 0,
+        status: newArticle.status,
+        isDaily: false,
+        tags: newArticle.tags,
+        category: newArticle.category,
+        cloudLinks: validCloudLinks,
+        createTime: new Date().toISOString().split('T')[0]
+      };
+      setArticles([...articles, newArticleData]);
+      toast({
+        title: '发布成功',
+        description: '新文章已发布',
+        variant: 'default'
+      });
+    }
+
+    // 重置表单
     setNewArticle({
       title: '',
       content: '',
-      status: 'draft'
+      coverImage: '',
+      status: 'draft',
+      tags: [],
+      category: '',
+      cloudLinks: [{ name: '', url: '', password: '' }]
     });
+  };
+
+  // 编辑文章
+  const handleEditArticle = article => {
+    setEditingArticle(article);
+    setNewArticle({
+      title: article.title,
+      content: article.content || '',
+      coverImage: article.coverImage || '',
+      status: article.status,
+      tags: article.tags || [],
+      category: article.category || '',
+      cloudLinks: article.cloudLinks && article.cloudLinks.length > 0 
+        ? article.cloudLinks 
+        : [{ name: '', url: '', password: '' }]
+    });
+  };
+
+  // 取消编辑
+  const handleCancelEdit = () => {
+    setEditingArticle(null);
+    setNewArticle({
+      title: '',
+      content: '',
+      coverImage: '',
+      status: 'draft',
+      tags: [],
+      category: '',
+      cloudLinks: [{ name: '', url: '', password: '' }]
+    });
+  };
+
+  // 添加网盘链接
+  const addCloudLink = () => {
+    setNewArticle(prev => ({
+      ...prev,
+      cloudLinks: [...prev.cloudLinks, { name: '', url: '', password: '' }]
+    }));
+  };
+
+  // 删除网盘链接
+  const removeCloudLink = (index) => {
+    setNewArticle(prev => ({
+      ...prev,
+      cloudLinks: prev.cloudLinks.filter((_, i) => i !== index)
+    }));
+  };
+
+  // 更新网盘链接
+  const updateCloudLink = (index, field, value) => {
+    setNewArticle(prev => ({
+      ...prev,
+      cloudLinks: prev.cloudLinks.map((link, i) => 
+        i === index ? { ...link, [field]: value } : link
+      )
+    }));
+  };
+
+  // 添加分类
+  const addCategory = () => {
+    if (newCategory.trim() && !categories.includes(newCategory.trim())) {
+      setCategories(prev => [...prev, newCategory.trim()]);
+      setNewCategory('');
+      toast({
+        title: '添加成功',
+        description: '新分类已添加',
+        variant: 'default'
+      });
+    }
+  };
+
+  // 删除分类
+  const removeCategory = (category) => {
+    setCategories(prev => prev.filter(c => c !== category));
     toast({
-      title: '发布成功',
-      description: '新文章已发布',
+      title: '删除成功',
+      description: '分类已删除',
       variant: 'default'
     });
+  };
+
+  // 添加标签
+  const addTag = () => {
+    if (newTag.trim() && !tags.includes(newTag.trim())) {
+      setTags(prev => [...prev, newTag.trim()]);
+      setNewTag('');
+      toast({
+        title: '添加成功',
+        description: '新标签已添加',
+        variant: 'default'
+      });
+    }
+  };
+
+  // 删除标签
+  const removeTag = (tag) => {
+    setTags(prev => prev.filter(t => t !== tag));
+    toast({
+      title: '删除成功',
+      description: '标签已删除',
+      variant: 'default'
+    });
+  };
+
+  // 选择标签
+  const toggleTag = (tag) => {
+    setNewArticle(prev => ({
+      ...prev,
+      tags: prev.tags.includes(tag) 
+        ? prev.tags.filter(t => t !== tag)
+        : [...prev.tags, tag]
+    }));
   };
 
   // 编辑文章
