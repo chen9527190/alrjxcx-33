@@ -5,6 +5,9 @@ import { useToast, Button, Input, Card, CardContent, CardDescription, CardFooter
 // @ts-ignore;
 import { Eye, Heart, Download, Star, Clock } from 'lucide-react';
 
+// @ts-ignore;
+import TabBar from '@/components/TabBar';
+
 // 资源卡片组件
 function ResourceCard({
   resource,
@@ -56,6 +59,7 @@ export default function Home(props) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('daily');
   const [resources, setResources] = useState([]);
+  const [filteredResources, setFilteredResources] = useState([]);
   const [tags, setTags] = useState(['软件工具', '网站资源', '课程教程', '设计素材', '办公效率']);
 
   // 模拟资源数据
@@ -89,15 +93,32 @@ export default function Home(props) {
   }];
   useEffect(() => {
     setResources(mockResources);
+    setFilteredResources(mockResources);
   }, []);
+
+  // 搜索功能
   const handleSearch = () => {
     if (searchQuery.trim()) {
+      const filtered = mockResources.filter(resource => resource.title.toLowerCase().includes(searchQuery.toLowerCase()) || resource.description.toLowerCase().includes(searchQuery.toLowerCase()) || resource.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())));
+      setFilteredResources(filtered);
       toast({
-        title: '搜索功能',
-        description: `正在搜索: ${searchQuery}`
+        title: '搜索结果',
+        description: `找到 ${filtered.length} 个相关资源`
       });
+    } else {
+      setFilteredResources(mockResources);
     }
   };
+
+  // 监听搜索词变化
+  useEffect(() => {
+    if (searchQuery.trim()) {
+      const filtered = mockResources.filter(resource => resource.title.toLowerCase().includes(searchQuery.toLowerCase()) || resource.description.toLowerCase().includes(searchQuery.toLowerCase()) || resource.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())));
+      setFilteredResources(filtered);
+    } else {
+      setFilteredResources(mockResources);
+    }
+  }, [searchQuery]);
   const handleLike = resourceId => {
     setResources(resources.map(resource => resource.id === resourceId ? {
       ...resource,
@@ -162,6 +183,10 @@ export default function Home(props) {
       <main className="max-w-6xl mx-auto px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="latest" className="flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              最新发布
+            </TabsTrigger>
             <TabsTrigger value="daily" className="flex items-center gap-2">
               <Star className="w-4 h-4" />
               每日推荐
@@ -170,18 +195,21 @@ export default function Home(props) {
               <Heart className="w-4 h-4" />
               热门推荐
             </TabsTrigger>
-            <TabsTrigger value="latest" className="flex items-center gap-2">
-              <Clock className="w-4 h-4" />
-              最新发布
-            </TabsTrigger>
           </TabsList>
+
+          {/* 最新发布 */}
+          <TabsContent value="latest" className="space-y-6">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {filteredResources.filter(r => r.type === 'latest').map(resource => <ResourceCard key={resource.id} resource={resource} onLike={handleLike} onDownload={handleDownload} />)}
+            </div>
+          </TabsContent>
 
           {/* 每日推荐 */}
           <TabsContent value="daily" className="space-y-6">
             <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6 mb-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">今日精选资源</h2>
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {resources.filter(r => r.type === 'daily').map(resource => <ResourceCard key={resource.id} resource={resource} onLike={handleLike} onDownload={handleDownload} />)}
+                {filteredResources.filter(r => r.type === 'daily').map(resource => <ResourceCard key={resource.id} resource={resource} onLike={handleLike} onDownload={handleDownload} />)}
               </div>
             </div>
           </TabsContent>
@@ -189,17 +217,25 @@ export default function Home(props) {
           {/* 热门推荐 */}
           <TabsContent value="hot" className="space-y-6">
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {resources.filter(r => r.type === 'hot').map(resource => <ResourceCard key={resource.id} resource={resource} onLike={handleLike} onDownload={handleDownload} />)}
-            </div>
-          </TabsContent>
-
-          {/* 最新发布 */}
-          <TabsContent value="latest" className="space-y-6">
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {resources.filter(r => r.type === 'latest').map(resource => <ResourceCard key={resource.id} resource={resource} onLike={handleLike} onDownload={handleDownload} />)}
+              {filteredResources.filter(r => r.type === 'hot').map(resource => <ResourceCard key={resource.id} resource={resource} onLike={handleLike} onDownload={handleDownload} />)}
             </div>
           </TabsContent>
         </Tabs>
       </main>
+      
+      {/* 底部导航栏 */}
+      <TabBar activeTab="home" onTabChange={tabId => {
+      if (tabId === 'profile') {
+        props.$w.utils.navigateTo({
+          pageId: 'profile',
+          params: {}
+        });
+      } else if (tabId === 'admin') {
+        props.$w.utils.navigateTo({
+          pageId: 'admin',
+          params: {}
+        });
+      }
+    }} />
     </div>;
 }
