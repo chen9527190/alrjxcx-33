@@ -1,0 +1,26 @@
+[
+  {
+    "_id": "1",
+    "name": "阿良用户",
+    "avatar": "",
+    "isLoggedIn": true,
+    "isVip": true,
+    "vipExpireAt": 1740672000000,
+    "points": 50,
+    "adFreeCoupons": 2,
+    "createdAt": 1737993600000,
+    "updatedAt": 1737993600000
+  },
+  {
+    "_id": "2",
+    "name": "未登录用户",
+    "avatar": "",
+    "isLoggedIn": false,
+    "isVip": false,
+    "vipExpireAt": null,
+    "points": 0,
+    "adFreeCoupons": 0,
+    "createdAt": 1737993600000,
+    "updatedAt": 1737993600000
+  }
+]

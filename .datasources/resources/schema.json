@@ -1,0 +1,72 @@
+{
+  "name": "resources",
+  "title": "资源管理",
+  "schemas": [
+    {
+      "name": "title",
+      "title": "标题",
+      "type": "String"
+    },
+    {
+      "name": "description",
+      "title": "描述",
+      "type": "MultiLineString"
+    },
+    {
+      "name": "cover",
+      "title": "封面图",
+      "type": "Image"
+    },
+    {
+      "name": "views",
+      "title": "浏览量",
+      "type": "Number"
+    },
+    {
+      "name": "likes",
+      "title": "点赞数",
+      "type": "Number"
+    },
+    {
+      "name": "tags",
+      "title": "标签",
+      "type": "Array",
+      "items": {
+        "type": "String"
+      }
+    },
+    {
+      "name": "type",
+      "title": "资源类型",
+      "type": "String"
+    },
+    {
+      "name": "status",
+      "title": "状态",
+      "type": "String"
+    },
+    {
+      "name": "category",
+      "title": "分类",
+      "type": "String"
+    },
+    {
+      "name": "isDaily",
+      "title": "是否每日推荐",
+      "type": "Boolean"
+    },
+    {
+      "name": "realViews",
+      "title": "真实浏览量",
+      "type": "Number"
+    },
+    {
+      "name": "cloudLinks",
+      "title": "云盘链接",
+      "type": "Array",
+      "items": {
+        "type": "Object"
+      }
+    }
+  ]
+}

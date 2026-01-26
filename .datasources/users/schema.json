@@ -1,0 +1,42 @@
+{
+  "name": "users",
+  "title": "用户信息",
+  "schemas": [
+    {
+      "name": "name",
+      "title": "用户名",
+      "type": "String"
+    },
+    {
+      "name": "avatar",
+      "title": "头像",
+      "type": "Image"
+    },
+    {
+      "name": "isLoggedIn",
+      "title": "是否已登录",
+      "type": "Boolean"
+    },
+    {
+      "name": "isVip",
+      "title": "是否VIP",
+      "type": "Boolean"
+    },
+    {
+      "name": "vipExpireAt",
+      "title": "VIP过期时间",
+      "type": "DateTime",
+      "format": "timestamp-ms"
+    },
+    {
+      "name": "points",
+      "title": "积分",
+      "type": "Number"
+    },
+    {
+      "name": "adFreeCoupons",
+      "title": "免广告券数量",
+      "type": "Number"
+    }
+  ]
+}

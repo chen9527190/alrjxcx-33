@@ -1,0 +1,64 @@
+[
+  {
+    "_id": "1",
+    "title": "Photoshop 2024 最新版安装包",
+    "description": "Adobe Photoshop 2024 官方正版安装包，包含激活工具",
+    "cover": "https://images.unsplash.com/photo-1611605698335-8b1569810432?w=400&h=200&fit=crop",
+    "views": 1250,
+    "likes": 89,
+    "tags": ["软件工具", "设计"],
+    "type": "daily",
+    "status": "published",
+    "category": "软件资源",
+    "isDaily": true,
+    "realViews": 890,
+    "cloudLinks": [
+      {
+        "name": "百度网盘",
+        "url": "https://pan.baidu.com/s/xxx",
+        "password": "1234"
+      },
+      {
+        "name": "阿里云盘",
+        "url": "https://www.aliyundrive.com/s/xxx",
+        "password": ""
+      }
+    ],
+    "createdAt": 1737993600000,
+    "updatedAt": 1737993600000
+  },
+  {
+    "_id": "2",
+    "title": "前端开发全套视频教程",
+    "description": "从零开始学习前端开发，包含HTML、CSS、JavaScript、React等",
+    "cover": "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=200&fit=crop",
+    "views": 890,
+    "likes": 67,
+    "tags": ["课程教程", "编程"],
+    "type": "hot",
+    "status": "published",
+    "category": "学习资料",
+    "isDaily": false,
+    "realViews": 567,
+    "cloudLinks": [],
+    "createdAt": 1737907200000,
+    "updatedAt": 1737907200000
+  },
+  {
+    "_id": "3",
+    "title": "免费商用字体合集",
+    "description": "100+款可商用的免费字体打包下载",
+    "cover": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=200&fit=crop",
+    "views": 2100,
+    "likes": 156,
+    "tags": ["设计素材", "字体"],
+    "type": "latest",
+    "status": "draft",
+    "category": "设计资源",
+    "isDaily": false,
+    "realViews": 1234,
+    "cloudLinks": [],
+    "createdAt": 1737820800000,
+    "updatedAt": 1737820800000
+  }
+]
