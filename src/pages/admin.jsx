@@ -24,10 +24,15 @@ export default function Admin(props) {
     isDaily: true,
     tags: ['设计', '工具'],
     category: '软件资源',
-    cloudLinks: [
-      { name: '百度网盘', url: 'https://pan.baidu.com/s/xxx', password: '1234' },
-      { name: '阿里云盘', url: 'https://www.aliyundrive.com/s/xxx', password: '' }
-    ]
+    cloudLinks: [{
+      name: '百度网盘',
+      url: 'https://pan.baidu.com/s/xxx',
+      password: '1234'
+    }, {
+      name: '阿里云盘',
+      url: 'https://www.aliyundrive.com/s/xxx',
+      password: ''
+    }]
   }, {
     id: 2,
     title: '前端开发教程',
@@ -64,7 +69,11 @@ export default function Admin(props) {
     status: 'draft',
     tags: [],
     category: '',
-    cloudLinks: [{ name: '', url: '', password: '' }]
+    cloudLinks: [{
+      name: '',
+      url: '',
+      password: ''
+    }]
   });
 
   // 编辑文章数据
@@ -96,24 +105,17 @@ export default function Admin(props) {
     }
 
     // 过滤有效的网盘链接
-    const validCloudLinks = newArticle.cloudLinks.filter(link => 
-      link.name.trim() && link.url.trim()
-    );
-
+    const validCloudLinks = newArticle.cloudLinks.filter(link => link.name.trim() && link.url.trim());
     if (editingArticle) {
       // 编辑文章
-      setArticles(prev => prev.map(article => 
-        article.id === editingArticle.id 
-          ? { 
-              ...newArticle, 
-              id: editingArticle.id,
-              views: editingArticle.views,
-              realViews: editingArticle.realViews,
-              likes: editingArticle.likes,
-              cloudLinks: validCloudLinks
-            }
-          : article
-      ));
+      setArticles(prev => prev.map(article => article.id === editingArticle.id ? {
+        ...newArticle,
+        id: editingArticle.id,
+        views: editingArticle.views,
+        realViews: editingArticle.realViews,
+        likes: editingArticle.likes,
+        cloudLinks: validCloudLinks
+      } : article));
       setEditingArticle(null);
       toast({
         title: '编辑成功',
@@ -153,7 +155,11 @@ export default function Admin(props) {
       status: 'draft',
       tags: [],
       category: '',
-      cloudLinks: [{ name: '', url: '', password: '' }]
+      cloudLinks: [{
+        name: '',
+        url: '',
+        password: ''
+      }]
     });
   };
 
@@ -167,9 +173,11 @@ export default function Admin(props) {
       status: article.status,
       tags: article.tags || [],
       category: article.category || '',
-      cloudLinks: article.cloudLinks && article.cloudLinks.length > 0 
-        ? article.cloudLinks 
-        : [{ name: '', url: '', password: '' }]
+      cloudLinks: article.cloudLinks && article.cloudLinks.length > 0 ? article.cloudLinks : [{
+        name: '',
+        url: '',
+        password: ''
+      }]
     });
   };
 
@@ -183,7 +191,11 @@ export default function Admin(props) {
       status: 'draft',
       tags: [],
       category: '',
-      cloudLinks: [{ name: '', url: '', password: '' }]
+      cloudLinks: [{
+        name: '',
+        url: '',
+        password: ''
+      }]
     });
   };
 
@@ -191,12 +203,16 @@ export default function Admin(props) {
   const addCloudLink = () => {
     setNewArticle(prev => ({
       ...prev,
-      cloudLinks: [...prev.cloudLinks, { name: '', url: '', password: '' }]
+      cloudLinks: [...prev.cloudLinks, {
+        name: '',
+        url: '',
+        password: ''
+      }]
     }));
   };
 
   // 删除网盘链接
-  const removeCloudLink = (index) => {
+  const removeCloudLink = index => {
     setNewArticle(prev => ({
       ...prev,
       cloudLinks: prev.cloudLinks.filter((_, i) => i !== index)
@@ -207,9 +223,10 @@ export default function Admin(props) {
   const updateCloudLink = (index, field, value) => {
     setNewArticle(prev => ({
       ...prev,
-      cloudLinks: prev.cloudLinks.map((link, i) => 
-        i === index ? { ...link, [field]: value } : link
-      )
+      cloudLinks: prev.cloudLinks.map((link, i) => i === index ? {
+        ...link,
+        [field]: value
+      } : link)
     }));
   };
 
@@ -227,7 +244,7 @@ export default function Admin(props) {
   };
 
   // 删除分类
-  const removeCategory = (category) => {
+  const removeCategory = category => {
     setCategories(prev => prev.filter(c => c !== category));
     toast({
       title: '删除成功',
@@ -250,7 +267,7 @@ export default function Admin(props) {
   };
 
   // 删除标签
-  const removeTag = (tag) => {
+  const removeTag = tag => {
     setTags(prev => prev.filter(t => t !== tag));
     toast({
       title: '删除成功',
@@ -260,16 +277,12 @@ export default function Admin(props) {
   };
 
   // 选择标签
-  const toggleTag = (tag) => {
+  const toggleTag = tag => {
     setNewArticle(prev => ({
       ...prev,
-      tags: prev.tags.includes(tag) 
-        ? prev.tags.filter(t => t !== tag)
-        : [...prev.tags, tag]
+      tags: prev.tags.includes(tag) ? prev.tags.filter(t => t !== tag) : [...prev.tags, tag]
     }));
   };
-
-
 
   // 保存编辑
   const handleSaveEdit = () => {
@@ -298,16 +311,6 @@ export default function Admin(props) {
       title: '保存成功',
       description: '文章已更新',
       variant: 'default'
-    });
-  };
-
-  // 取消编辑
-  const handleCancelEdit = () => {
-    setEditingArticle(null);
-    setNewArticle({
-      title: '',
-      content: '',
-      status: 'draft'
     });
   };
 
