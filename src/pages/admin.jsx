@@ -659,9 +659,14 @@ export default function Admin(props) {
 
       // 逐个插入数据库
       for (const card of cardsToInsert) {
-        await db.collection('vip_cards').add({
-          data: card
-        });
+        try {
+          await db.collection('vip_cards').add({
+            data: card
+          });
+        } catch (insertError) {
+          console.error('插入卡密失败:', insertError);
+          throw new Error(`卡密插入失败: ${insertError.message}`);
+        }
       }
 
       // 重新加载卡密数据
@@ -681,6 +686,8 @@ export default function Admin(props) {
           description: card.description
         }));
         setVipKeys(cards);
+      } else {
+        setVipKeys([]);
       }
       toast({
         title: '生成成功',
@@ -697,24 +704,69 @@ export default function Admin(props) {
   };
 
   // 删除卡密
-  const handleDeleteKey = keyId => {
-    setVipKeys(vipKeys.filter(key => key.id !== keyId));
-    toast({
-      title: '删除成功',
-      description: '卡密已删除'
-    });
+  const handleDeleteKey = async keyId => {
+    try {
+      const keyToDelete = vipKeys.find(key => key.id === keyId);
+      if (!keyToDelete) return;
+      const tcb = await props.$w.cloud.getCloudInstance();
+      const db = tcb.database();
+
+      // 从数据库中删除对应的卡密
+      const result = await db.collection('vip_cards').where({
+        cardPassword: keyToDelete.key
+      }).get();
+      if (result.data && result.data.length > 0) {
+        await db.collection('vip_cards').doc(result.data[0]._id).remove();
+      }
+      setVipKeys(vipKeys.filter(key => key.id !== keyId));
+      toast({
+        title: '删除成功',
+        description: '卡密已删除'
+      });
+    } catch (error) {
+      console.error('删除卡密失败:', error);
+      toast({
+        title: '删除失败',
+        description: error.message || '系统错误，请稍后重试',
+        variant: 'destructive'
+      });
+    }
   };
 
   // 禁用/启用卡密
-  const handleToggleKeyStatus = keyId => {
-    setVipKeys(vipKeys.map(key => key.id === keyId ? {
-      ...key,
-      status: key.status === 'inactive' ? 'disabled' : 'inactive'
-    } : key));
-    toast({
-      title: '状态更新成功',
-      description: '卡密状态已更新'
-    });
+  const handleToggleKeyStatus = async keyId => {
+    try {
+      const keyToToggle = vipKeys.find(key => key.id === keyId);
+      if (!keyToToggle) return;
+      const tcb = await props.$w.cloud.getCloudInstance();
+      const db = tcb.database();
+
+      // 从数据库中查找对应的卡密
+      const result = await db.collection('vip_cards').where({
+        cardPassword: keyToToggle.key
+      }).get();
+      if (result.data && result.data.length > 0) {
+        const newStatus = keyToToggle.status === 'inactive' ? '已禁用' : '未使用';
+        await db.collection('vip_cards').doc(result.data[0]._id).update({
+          status: newStatus
+        });
+      }
+      setVipKeys(vipKeys.map(key => key.id === keyId ? {
+        ...key,
+        status: key.status === 'inactive' ? 'disabled' : 'inactive'
+      } : key));
+      toast({
+        title: '状态更新成功',
+        description: '卡密状态已更新'
+      });
+    } catch (error) {
+      console.error('更新卡密状态失败:', error);
+      toast({
+        title: '更新失败',
+        description: error.message || '系统错误，请稍后重试',
+        variant: 'destructive'
+      });
+    }
   };
   const handleSetDaily = articleId => {
     setArticles(articles.map(article => article.id === articleId ? {

@@ -44,12 +44,6 @@
       "format": "timestamp-ms"
     },
     {
-      "name": "createdAt",
-      "title": "创建时间",
-      "type": "DateTime",
-      "format": "timestamp-ms"
-    },
-    {
       "name": "externalLink",
       "title": "外部购买链接",
       "type": "String"

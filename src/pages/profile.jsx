@@ -178,12 +178,22 @@ export default function Profile(props) {
         });
       }
 
-      // 更新本地状态
-      setUserInfo({
-        ...userInfo,
-        isVip: true,
-        vipExpireAt: expireTime
-      });
+      // 重新加载用户信息以确保状态同步
+      const updatedUserResult = await db.collection('users').where({
+        _openid: userId
+      }).get();
+      if (updatedUserResult.data && updatedUserResult.data.length > 0) {
+        const updatedUserData = updatedUserResult.data[0];
+        setUserInfo({
+          name: updatedUserData.name || props.$w.auth.currentUser?.name || '用户',
+          avatar: updatedUserData.avatar || props.$w.auth.currentUser?.avatarUrl || '',
+          isLoggedIn: true,
+          isVip: updatedUserData.isVip || false,
+          vipExpireAt: updatedUserData.vipExpireAt ? new Date(updatedUserData.vipExpireAt) : null,
+          points: updatedUserData.points || 0,
+          adFreeCoupons: updatedUserData.adFreeCoupons || 0
+        });
+      }
       setVipCode('');
       toast({
         title: '激活成功',
