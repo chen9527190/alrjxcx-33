@@ -5,6 +5,8 @@ import { useToast, Button, Input, Card, CardContent, CardDescription, CardFooter
 // @ts-ignore;
 import { User, Crown, Coins, Settings, Gift, Shield, Calendar, Eye, Heart, Download } from 'lucide-react';
 
+// @ts-ignore;
+import TabBar from '@/components/TabBar';
 export default function Profile(props) {
   const {
     toast
@@ -328,5 +330,20 @@ export default function Profile(props) {
           </TabsContent>
         </Tabs>
       </main>
+      
+      {/* 底部导航栏 */}
+      <TabBar activeTab="profile" onTabChange={tabId => {
+      if (tabId === 'home') {
+        props.$w.utils.navigateTo({
+          pageId: 'home',
+          params: {}
+        });
+      } else if (tabId === 'admin') {
+        props.$w.utils.navigateTo({
+          pageId: 'admin',
+          params: {}
+        });
+      }
+    }} />
     </div>;
 }
