@@ -554,7 +554,22 @@ export default function Admin(props) {
     cardType: 'monthly',
     quantity: 1
   });
-  const handleGenerateKeys = () => {
+  // 生成随机卡密函数
+  const generateRandomKey = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 去除易混淆字符
+    const segments = [];
+
+    // 生成4段随机字符，每段4位
+    for (let i = 0; i < 4; i++) {
+      let segment = '';
+      for (let j = 0; j < 4; j++) {
+        segment += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      segments.push(segment);
+    }
+    return segments.join('-');
+  };
+  const handleGenerateKeys = async () => {
     const {
       cardType,
       quantity
@@ -588,22 +603,64 @@ export default function Admin(props) {
       });
       return;
     }
-    const newKeys = Array.from({
-      length: quantity
-    }, (_, index) => ({
-      id: vipKeys.length + index + 1,
-      key: `VIP${new Date().getTime()}${vipKeys.length + index + 1}`,
-      duration: duration,
-      cardType: cardType,
-      status: 'inactive',
-      user: null,
-      activateTime: null
-    }));
-    setVipKeys([...vipKeys, ...newKeys]);
-    toast({
-      title: '生成成功',
-      description: `已生成 ${quantity} 张 ${cardType === 'monthly' ? '月卡' : cardType === 'quarterly' ? '季度卡' : cardType === 'halfyear' ? '半年卡' : '年卡'}（${duration}天）`
-    });
+    try {
+      // 生成无规律的随机卡密
+      const newKeys = Array.from({
+        length: quantity
+      }, (_, index) => ({
+        id: vipKeys.length + index + 1,
+        key: generateRandomKey(),
+        duration: duration,
+        cardType: cardType,
+        status: 'inactive',
+        user: null,
+        activateTime: null
+      }));
+
+      // 保存到数据库
+      const tcb = await props.$w.cloud.getCloudInstance();
+      const db = tcb.database();
+      const cardTypeMap = {
+        monthly: '月卡',
+        quarterly: '季卡',
+        halfyear: '半年卡',
+        yearly: '年卡'
+      };
+      const priceMap = {
+        monthly: 29.9,
+        quarterly: 79.9,
+        halfyear: 149.9,
+        yearly: 299.9
+      };
+
+      // 批量插入数据库
+      const cardsToInsert = newKeys.map(key => ({
+        cardNumber: `VIP${Date.now()}${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
+        cardPassword: key.key,
+        cardType: cardTypeMap[cardType],
+        duration: duration,
+        price: priceMap[cardType],
+        status: '未使用',
+        createdAt: Date.now(),
+        externalLink: '',
+        description: `${cardTypeMap[cardType]}会员，享受${duration}天VIP特权`
+      }));
+      await db.collection('vip_cards').add({
+        data: cardsToInsert
+      });
+      setVipKeys([...vipKeys, ...newKeys]);
+      toast({
+        title: '生成成功',
+        description: `已生成 ${quantity} 张 ${cardType === 'monthly' ? '月卡' : cardType === 'quarterly' ? '季度卡' : cardType === 'halfyear' ? '半年卡' : '年卡'}（${duration}天）`
+      });
+    } catch (error) {
+      console.error('卡密生成失败:', error);
+      toast({
+        title: '生成失败',
+        description: error.message || '系统错误，请稍后重试',
+        variant: 'destructive'
+      });
+    }
   };
 
   // 删除卡密

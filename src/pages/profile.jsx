@@ -56,7 +56,7 @@ export default function Profile(props) {
       description: '欢迎使用阿良资源库！'
     });
   };
-  const handleActivateVip = () => {
+  const handleActivateVip = async () => {
     if (!vipCode.trim()) {
       toast({
         title: '输入错误',
@@ -65,25 +65,70 @@ export default function Profile(props) {
       });
       return;
     }
+    if (!userInfo.isLoggedIn) {
+      toast({
+        title: '未登录',
+        description: '请先登录后再激活会员',
+        variant: 'destructive'
+      });
+      return;
+    }
     toast({
       title: '正在激活',
       description: '验证卡密中...'
     });
+    try {
+      // 从数据库查询卡密
+      const tcb = await props.$w.cloud.getCloudInstance();
+      const db = tcb.database();
+      const _ = db.command;
 
-    // 模拟卡密验证
-    setTimeout(() => {
+      // 查询匹配的卡密
+      const result = await db.collection('vip_cards').where({
+        cardPassword: vipCode.trim(),
+        status: '未使用'
+      }).get();
+      if (result.data.length === 0) {
+        toast({
+          title: '激活失败',
+          description: '卡密不存在或已被使用',
+          variant: 'destructive'
+        });
+        return;
+      }
+      const card = result.data[0];
+      const userId = props.$w.auth.currentUser?.userId || 'unknown';
+
+      // 更新卡密状态为已使用
+      await db.collection('vip_cards').doc(card._id).update({
+        status: '已使用',
+        usedBy: userId,
+        usedAt: Date.now()
+      });
+
+      // 计算VIP过期时间
+      const expireTime = new Date(Date.now() + card.duration * 24 * 60 * 60 * 1000);
+
+      // 更新用户VIP状态
       setUserInfo({
         ...userInfo,
         isVip: true,
-        vipExpireAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30天后
+        vipExpireAt: expireTime
       });
       setVipCode('');
       toast({
         title: '激活成功',
-        description: '会员特权已开启！',
+        description: `${card.cardType}会员已激活，有效期至${expireTime.toLocaleDateString()}`,
         variant: 'success'
       });
-    }, 1500);
+    } catch (error) {
+      console.error('卡密激活失败:', error);
+      toast({
+        title: '激活失败',
+        description: error.message || '系统错误，请稍后重试',
+        variant: 'destructive'
+      });
+    }
   };
   const handleWatchAd = () => {
     toast({
