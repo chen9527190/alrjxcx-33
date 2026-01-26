@@ -246,6 +246,74 @@ export default function Admin(props) {
     }
   };
 
+  // 添加图片URL
+  const addImageUrl = () => {
+    setImageUrls(prev => [...prev, '']);
+  };
+
+  // 更新图片URL
+  const updateImageUrl = (index, value) => {
+    setImageUrls(prev => prev.map((url, i) => i === index ? value : url));
+  };
+
+  // 删除图片URL
+  const removeImageUrl = index => {
+    setImageUrls(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // 插入图片到内容
+  const insertImageToContent = imageUrl => {
+    if (imageUrl.trim()) {
+      const imageMarkdown = `\n![图片](${imageUrl})\n`;
+      setNewArticle(prev => ({
+        ...prev,
+        content: prev.content + imageMarkdown
+      }));
+      toast({
+        title: '插入成功',
+        description: '图片已插入到内容中',
+        variant: 'default'
+      });
+    }
+  };
+
+  // 添加文字链接
+  const addTextLink = () => {
+    setTextLinks(prev => [...prev, {
+      name: '',
+      url: ''
+    }]);
+  };
+
+  // 更新文字链接
+  const updateTextLink = (index, field, value) => {
+    setTextLinks(prev => prev.map((link, i) => i === index ? {
+      ...link,
+      [field]: value
+    } : link));
+  };
+
+  // 删除文字链接
+  const removeTextLink = index => {
+    setTextLinks(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // 插入链接到内容
+  const insertLinkToContent = link => {
+    if (link.name.trim() && link.url.trim()) {
+      const linkMarkdown = `[${link.name}](${link.url})`;
+      setNewArticle(prev => ({
+        ...prev,
+        content: prev.content + linkMarkdown
+      }));
+      toast({
+        title: '插入成功',
+        description: '链接已插入到内容中',
+        variant: 'default'
+      });
+    }
+  };
+
   // 删除分类
   const removeCategory = category => {
     setCategories(prev => prev.filter(c => c !== category));
