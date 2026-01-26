@@ -88,6 +88,10 @@ export default function Admin(props) {
   // 标签分类管理面板状态
   const [showTagPanel, setShowTagPanel] = useState(false);
 
+  // 编辑状态
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [editingTag, setEditingTag] = useState(null);
+
   // 发布新文章
   const handlePublishArticle = () => {
     if (!newArticle.title.trim()) {
