@@ -37,6 +37,118 @@ export default function Admin(props) {
     status: 'draft',
     isDaily: false
   }]);
+
+  // 新文章表单数据
+  const [newArticle, setNewArticle] = useState({
+    title: '',
+    content: '',
+    status: 'draft'
+  });
+
+  // 编辑文章数据
+  const [editingArticle, setEditingArticle] = useState(null);
+
+  // 发布新文章
+  const handlePublishArticle = () => {
+    if (!newArticle.title.trim()) {
+      toast({
+        title: '发布失败',
+        description: '请输入文章标题',
+        variant: 'destructive'
+      });
+      return;
+    }
+    if (!newArticle.content.trim()) {
+      toast({
+        title: '发布失败',
+        description: '请输入文章内容',
+        variant: 'destructive'
+      });
+      return;
+    }
+    const newArticleData = {
+      id: articles.length + 1,
+      title: newArticle.title,
+      content: newArticle.content,
+      views: 0,
+      realViews: 0,
+      likes: 0,
+      status: newArticle.status,
+      isDaily: false,
+      createTime: new Date().toISOString().split('T')[0]
+    };
+    setArticles([...articles, newArticleData]);
+    setNewArticle({
+      title: '',
+      content: '',
+      status: 'draft'
+    });
+    toast({
+      title: '发布成功',
+      description: '新文章已发布',
+      variant: 'default'
+    });
+  };
+
+  // 编辑文章
+  const handleEditArticle = article => {
+    setEditingArticle(article);
+    setNewArticle({
+      title: article.title,
+      content: article.content || '',
+      status: article.status
+    });
+  };
+
+  // 保存编辑
+  const handleSaveEdit = () => {
+    if (!editingArticle) return;
+    if (!newArticle.title.trim()) {
+      toast({
+        title: '保存失败',
+        description: '请输入文章标题',
+        variant: 'destructive'
+      });
+      return;
+    }
+    setArticles(articles.map(article => article.id === editingArticle.id ? {
+      ...article,
+      title: newArticle.title,
+      content: newArticle.content,
+      status: newArticle.status
+    } : article));
+    setEditingArticle(null);
+    setNewArticle({
+      title: '',
+      content: '',
+      status: 'draft'
+    });
+    toast({
+      title: '保存成功',
+      description: '文章已更新',
+      variant: 'default'
+    });
+  };
+
+  // 取消编辑
+  const handleCancelEdit = () => {
+    setEditingArticle(null);
+    setNewArticle({
+      title: '',
+      content: '',
+      status: 'draft'
+    });
+  };
+
+  // 删除文章
+  const handleDeleteArticle = articleId => {
+    setArticles(articles.filter(article => article.id !== articleId));
+    toast({
+      title: '删除成功',
+      description: '文章已删除',
+      variant: 'default'
+    });
+  };
   const [adSettings, setAdSettings] = useState({
     globalEnabled: true,
     splash: {
@@ -251,6 +363,36 @@ export default function Admin(props) {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
+                  {/* 发布/编辑文章表单 */}
+                  <div className="p-4 border rounded-lg bg-gray-50">
+                    <h3 className="text-lg font-semibold mb-4">{editingArticle ? '编辑文章' : '发布新文章'}</h3>
+                    <div className="space-y-4">
+                      <Input placeholder="文章标题" value={newArticle.title} onChange={e => setNewArticle({
+                      ...newArticle,
+                      title: e.target.value
+                    })} />
+                      <Textarea placeholder="文章内容" rows={4} value={newArticle.content} onChange={e => setNewArticle({
+                      ...newArticle,
+                      content: e.target.value
+                    })} />
+                      <div className="flex gap-2">
+                        <Button onClick={editingArticle ? handleSaveEdit : handlePublishArticle} className="bg-blue-600 hover:bg-blue-700">
+                          {editingArticle ? '保存修改' : '发布文章'}
+                        </Button>
+                        <Button variant="outline" onClick={() => setNewArticle({
+                        ...newArticle,
+                        status: 'draft'
+                      })}>
+                          存为草稿
+                        </Button>
+                        {editingArticle && <Button variant="outline" onClick={handleCancelEdit}>
+                            取消编辑
+                          </Button>}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 文章列表 */}
                   {articles.map(article => <div key={article.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex-1">
                         <div className="flex items-center space-x-3 mb-2">
@@ -270,10 +412,10 @@ export default function Admin(props) {
                         <Button variant="outline" size="sm" onClick={() => handleSetDaily(article.id)}>
                           {article.isDaily ? '取消推荐' : '设为推荐'}
                         </Button>
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" onClick={() => handleEditArticle(article)}>
                           <Edit className="w-4 h-4" />
                         </Button>
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" onClick={() => handleDeleteArticle(article.id)}>
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
