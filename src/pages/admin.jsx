@@ -94,7 +94,10 @@ export default function Admin(props) {
 
   // 图片和链接管理
   const [imageUrls, setImageUrls] = useState(['']);
-  const [textLinks, setTextLinks] = useState([{ name: '', url: '' }]);
+  const [textLinks, setTextLinks] = useState([{
+    name: '',
+    url: ''
+  }]);
 
   // 发布新文章
   const handlePublishArticle = () => {
@@ -268,18 +271,17 @@ export default function Admin(props) {
   };
 
   // 删除分类
-  const removeCategory = (category) => {
+  const removeCategory = category => {
     // 检查是否有文章使用该分类
     const articlesUsingCategory = articles.filter(article => article.category === category);
     if (articlesUsingCategory.length > 0) {
       toast({
         title: '删除失败',
-        description: `有 ${articlesUsingCategory.length} 篇文章使用此分类，请先修改文章分类`, 
+        description: `有 ${articlesUsingCategory.length} 篇文章使用此分类，请先修改文章分类`,
         variant: 'destructive'
       });
       return;
     }
-    
     setCategories(prev => prev.filter(c => c !== category));
     toast({
       title: '删除成功',
@@ -356,27 +358,6 @@ export default function Admin(props) {
     }
   };
 
-  // 删除标签
-  const removeTag = (tag) => {
-    // 检查是否有文章使用该标签
-    const articlesUsingTag = articles.filter(article => article.tags?.includes(tag));
-    if (articlesUsingTag.length > 0) {
-      toast({
-        title: '删除失败',
-        description: `有 ${articlesUsingTag.length} 篇文章使用此标签，请先修改文章标签`, 
-        variant: 'destructive'
-      });
-      return;
-    }
-    
-    setTags(prev => prev.filter(t => t !== tag));
-    toast({
-      title: '删除成功',
-      description: '标签已删除',
-      variant: 'default'
-    });
-  };
-
   // 添加标签
   const addTag = () => {
     if (newTag.trim() && !tags.includes(newTag.trim())) {
@@ -406,27 +387,6 @@ export default function Admin(props) {
         variant: 'default'
       });
     }
-  };
-
-  // 删除标签
-  const removeTag = (tag) => {
-    // 检查是否有文章使用该标签
-    const articlesUsingTag = articles.filter(article => article.tags?.includes(tag));
-    if (articlesUsingTag.length > 0) {
-      toast({
-        title: '删除失败',
-        description: `有 ${articlesUsingTag.length} 篇文章使用此标签，请先修改文章标签`, 
-        variant: 'destructive'
-      });
-      return;
-    }
-    
-    setTags(prev => prev.filter(t => t !== tag));
-    toast({
-      title: '删除成功',
-      description: '标签已删除',
-      variant: 'default'
-    });
   };
 
   // 选择标签
