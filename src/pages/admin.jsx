@@ -11,6 +11,47 @@ export default function Admin(props) {
   } = useToast();
   const [activeTab, setActiveTab] = useState('content');
 
+  // 卡密管理相关状态
+  const [vipCards, setVipCards] = useState([{
+    cardNumber: 'VIP202501270001',
+    cardPassword: 'ABCD1234',
+    cardType: '月卡',
+    duration: 30,
+    price: 29.9,
+    status: '未使用',
+    externalLink: 'https://example.com/buy/vip-monthly',
+    description: '月卡会员，享受30天VIP特权'
+  }, {
+    cardNumber: 'VIP202501270002',
+    cardPassword: 'EFGH5678',
+    cardType: '季卡',
+    duration: 90,
+    price: 79.9,
+    status: '已使用',
+    usedBy: 'user123',
+    usedAt: 1738000000000,
+    externalLink: 'https://example.com/buy/vip-quarterly',
+    description: '季卡会员，享受90天VIP特权'
+  }, {
+    cardNumber: 'VIP202501270003',
+    cardPassword: 'IJKL9012',
+    cardType: '年卡',
+    duration: 365,
+    price: 299.9,
+    status: '未使用',
+    externalLink: 'https://example.com/buy/vip-annual',
+    description: '年卡会员，享受365天VIP特权'
+  }]);
+  const [newCard, setNewCard] = useState({
+    cardNumber: '',
+    cardPassword: '',
+    cardType: '月卡',
+    duration: 30,
+    price: 0,
+    externalLink: '',
+    description: ''
+  });
+
   // 模拟数据
   const [articles, setArticles] = useState([{
     id: 1,
