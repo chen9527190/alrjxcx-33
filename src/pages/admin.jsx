@@ -269,15 +269,7 @@ export default function Admin(props) {
     }));
   };
 
-  // 编辑文章
-  const handleEditArticle = article => {
-    setEditingArticle(article);
-    setNewArticle({
-      title: article.title,
-      content: article.content || '',
-      status: article.status
-    });
-  };
+
 
   // 保存编辑
   const handleSaveEdit = () => {
