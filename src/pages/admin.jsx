@@ -430,14 +430,7 @@ export default function Admin(props) {
   };
 
   // 删除标签
-  const removeTag = tag => {
-    setTags(prev => prev.filter(t => t !== tag));
-    toast({
-      title: '删除成功',
-      description: '标签已删除',
-      variant: 'default'
-    });
-  };
+
 
   // 选择标签
   const toggleTag = tag => {
