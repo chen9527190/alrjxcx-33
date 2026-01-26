@@ -429,9 +429,6 @@ export default function Admin(props) {
     });
   };
 
-  // 删除标签
-
-
   // 选择标签
   const toggleTag = tag => {
     setNewArticle(prev => ({
