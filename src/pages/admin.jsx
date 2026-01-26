@@ -1,9 +1,9 @@
 // @ts-ignore;
 import React, { useState } from 'react';
 // @ts-ignore;
-import { useToast, Button, Input, Textarea, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Tabs, TabsContent, TabsList, TabsTrigger, Badge, Switch, Label } from '@/components/ui';
+import { useToast, Button, Input, Textarea, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Tabs, TabsContent, TabsList, TabsTrigger, Badge, Switch, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 // @ts-ignore;
-import { Plus, Edit, Trash2, Eye, Download, Users, Settings, BarChart3, Key, Bell } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Download, Users, Settings, BarChart3, Key, Bell, X, Image, Link, Tag, Folder } from 'lucide-react';
 
 export default function Admin(props) {
   const {
@@ -84,6 +84,9 @@ export default function Admin(props) {
   const [tags, setTags] = useState(['前端', '设计', '工具', '教程', '免费', '资源', '软件', '字体', '插件']);
   const [newCategory, setNewCategory] = useState('');
   const [newTag, setNewTag] = useState('');
+
+  // 标签分类管理面板状态
+  const [showTagPanel, setShowTagPanel] = useState(false);
 
   // 发布新文章
   const handlePublishArticle = () => {
@@ -538,25 +541,161 @@ export default function Admin(props) {
               <CardContent>
                 <div className="space-y-4">
                   {/* 发布/编辑文章表单 */}
-                  <div className="p-4 border rounded-lg bg-gray-50">
-                    <h3 className="text-lg font-semibold mb-4">{editingArticle ? '编辑文章' : '发布新文章'}</h3>
-                    <div className="space-y-4">
-                      <Input placeholder="文章标题" value={newArticle.title} onChange={e => setNewArticle({
-                      ...newArticle,
-                      title: e.target.value
-                    })} />
-                      <Textarea placeholder="文章内容" rows={4} value={newArticle.content} onChange={e => setNewArticle({
-                      ...newArticle,
-                      content: e.target.value
-                    })} />
-                      <div className="flex gap-2">
+                  <div className="p-6 border rounded-lg bg-white shadow-sm">
+                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                      <Edit className="w-5 h-5" />
+                      {editingArticle ? '编辑文章' : '发布新文章'}
+                    </h3>
+                    <div className="space-y-6">
+                      {/* 基础信息 */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="title" className="mb-2 block">文章标题</Label>
+                          <Input id="title" placeholder="请输入文章标题" value={newArticle.title} onChange={e => setNewArticle({
+                          ...newArticle,
+                          title: e.target.value
+                        })} />
+                        </div>
+                        <div>
+                          <Label htmlFor="category" className="mb-2 block">文章分类</Label>
+                          <Select value={newArticle.category} onValueChange={value => setNewArticle({
+                          ...newArticle,
+                          category: value
+                        })}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="选择分类" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {categories.map(category => <SelectItem key={category} value={category}>{category}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      {/* 封面图片 */}
+                      <div>
+                        <Label className="mb-2 block flex items-center gap-2">
+                          <Image className="w-4 h-4" />
+                          封面图片
+                        </Label>
+                        <div className="flex gap-4">
+                          <Input placeholder="封面图片URL" value={newArticle.coverImage} onChange={e => setNewArticle({
+                          ...newArticle,
+                          coverImage: e.target.value
+                        })} className="flex-1" />
+                          {newArticle.coverImage && <div className="w-16 h-16 border rounded overflow-hidden">
+                              <img src={newArticle.coverImage} alt="封面预览" className="w-full h-full object-cover" />
+                            </div>}
+                        </div>
+                      </div>
+
+                      {/* 文章内容 */}
+                      <div>
+                        <Label htmlFor="content" className="mb-2 block">文章内容</Label>
+                        <Textarea id="content" placeholder="请输入文章内容，支持图文混排..." rows={8} value={newArticle.content} onChange={e => setNewArticle({
+                        ...newArticle,
+                        content: e.target.value
+                      })} />
+                      </div>
+
+                      {/* 标签选择 */}
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <Label className="flex items-center gap-2">
+                            <Tag className="w-4 h-4" />
+                            文章标签
+                          </Label>
+                          <Button variant="outline" size="sm" onClick={() => setShowTagPanel(!showTagPanel)}>
+                            管理标签
+                          </Button>
+                        </div>
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          {newArticle.tags.map(tag => <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+                              {tag}
+                              <X className="w-3 h-3 cursor-pointer" onClick={() => toggleTag(tag)} />
+                            </Badge>)}
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {tags.filter(tag => !newArticle.tags.includes(tag)).map(tag => <Badge key={tag} variant="outline" className="cursor-pointer" onClick={() => toggleTag(tag)}>
+                              {tag}
+                            </Badge>)}
+                        </div>
+                      </div>
+
+                      {/* 网盘链接管理 */}
+                      <div>
+                        <Label className="mb-2 block flex items-center gap-2">
+                          <Link className="w-4 h-4" />
+                          网盘链接
+                        </Label>
+                        <div className="space-y-3">
+                          {newArticle.cloudLinks.map((link, index) => <div key={index} className="flex gap-2 items-start">
+                              <Input placeholder="链接名称（如：百度网盘）" value={link.name} onChange={e => updateCloudLink(index, 'name', e.target.value)} className="flex-1" />
+                              <Input placeholder="链接URL" value={link.url} onChange={e => updateCloudLink(index, 'url', e.target.value)} className="flex-1" />
+                              <Input placeholder="提取码（可选）" value={link.password} onChange={e => updateCloudLink(index, 'password', e.target.value)} className="w-32" />
+                              <Button variant="outline" size="sm" onClick={() => removeCloudLink(index)} disabled={newArticle.cloudLinks.length === 1}>
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </div>)}
+                          <Button variant="outline" onClick={addCloudLink} className="w-full">
+                            <Plus className="w-4 h-4 mr-2" />
+                            添加网盘链接
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* 操作按钮 */}
+                      <div className="flex gap-2 pt-4 border-t">
                         <Button onClick={editingArticle ? handleSaveEdit : handlePublishArticle} className="bg-blue-600 hover:bg-blue-700">
                           {editingArticle ? '保存修改' : '发布文章'}
                         </Button>
-                        <Button variant="outline" onClick={() => setNewArticle({
-                        ...newArticle,
-                        status: 'draft'
-                      })}>
+                        <Button variant="outline" onClick={() => {
+                        const articleData = {
+                          ...newArticle,
+                          status: 'draft'
+                        };
+                        if (editingArticle) {
+                          setArticles(prev => prev.map(article => article.id === editingArticle.id ? {
+                            ...articleData,
+                            id: editingArticle.id
+                          } : article));
+                          setEditingArticle(null);
+                          toast({
+                            title: '保存成功',
+                            description: '草稿已保存',
+                            variant: 'default'
+                          });
+                        } else {
+                          const newArticleData = {
+                            ...articleData,
+                            id: articles.length + 1,
+                            views: 0,
+                            realViews: 0,
+                            likes: 0,
+                            isDaily: false,
+                            createTime: new Date().toISOString().split('T')[0]
+                          };
+                          setArticles([...articles, newArticleData]);
+                          toast({
+                            title: '保存成功',
+                            description: '草稿已保存',
+                            variant: 'default'
+                          });
+                        }
+                        setNewArticle({
+                          title: '',
+                          content: '',
+                          coverImage: '',
+                          status: 'draft',
+                          tags: [],
+                          category: '',
+                          cloudLinks: [{
+                            name: '',
+                            url: '',
+                            password: ''
+                          }]
+                        });
+                      }}>
                           存为草稿
                         </Button>
                         {editingArticle && <Button variant="outline" onClick={handleCancelEdit}>
@@ -566,34 +705,112 @@ export default function Admin(props) {
                     </div>
                   </div>
 
+                  {/* 标签分类管理面板 */}
+                  {showTagPanel && <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Folder className="w-5 h-5" />
+                          标签与分类管理
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {/* 分类管理 */}
+                          <div>
+                            <h4 className="font-semibold mb-3">分类管理</h4>
+                            <div className="flex gap-2 mb-3">
+                              <Input placeholder="新分类名称" value={newCategory} onChange={e => setNewCategory(e.target.value)} />
+                              <Button onClick={addCategory}>
+                                <Plus className="w-4 h-4" />
+                              </Button>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {categories.map(category => <Badge key={category} variant="secondary" className="flex items-center gap-1">
+                                  {category}
+                                  <X className="w-3 h-3 cursor-pointer" onClick={() => removeCategory(category)} />
+                                </Badge>)}
+                            </div>
+                          </div>
+
+                          {/* 标签管理 */}
+                          <div>
+                            <h4 className="font-semibold mb-3">标签管理</h4>
+                            <div className="flex gap-2 mb-3">
+                              <Input placeholder="新标签名称" value={newTag} onChange={e => setNewTag(e.target.value)} />
+                              <Button onClick={addTag}>
+                                <Plus className="w-4 h-4" />
+                              </Button>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {tags.map(tag => <Badge key={tag} variant="outline" className="flex items-center gap-1">
+                                  {tag}
+                                  <X className="w-3 h-3 cursor-pointer" onClick={() => removeTag(tag)} />
+                                </Badge>)}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>}
+
                   {/* 文章列表 */}
-                  {articles.map(article => <div key={article.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3 mb-2">
-                          <h3 className="font-semibold">{article.title}</h3>
-                          {article.isDaily && <Badge variant="default">每日推荐</Badge>}
-                          <Badge variant={article.status === 'published' ? 'default' : 'secondary'}>
-                            {article.status === 'published' ? '已发布' : '草稿'}
-                          </Badge>
-                        </div>
-                        <div className="flex space-x-4 text-sm text-gray-500">
-                          <span>展示阅读: {article.views}</span>
-                          <span>真实阅读: {article.realViews}</span>
-                          <span>点赞: {article.likes}</span>
-                        </div>
-                      </div>
-                      <div className="flex space-x-2">
-                        <Button variant="outline" size="sm" onClick={() => handleSetDaily(article.id)}>
-                          {article.isDaily ? '取消推荐' : '设为推荐'}
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => handleEditArticle(article)}>
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => handleDeleteArticle(article.id)}>
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>)}
+                  <div className="space-y-4">
+                    {articles.map(article => <Card key={article.id}>
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-4">
+                            {/* 封面图片 */}
+                            {article.coverImage && <div className="w-20 h-20 flex-shrink-0 border rounded overflow-hidden">
+                                <img src={article.coverImage} alt="封面" className="w-full h-full object-cover" />
+                              </div>}
+                            
+                            {/* 文章信息 */}
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <h3 className="font-semibold text-lg">{article.title}</h3>
+                                {article.isDaily && <Badge variant="default">每日推荐</Badge>}
+                                <Badge variant={article.status === 'published' ? 'default' : 'secondary'}>
+                                  {article.status === 'published' ? '已发布' : '草稿'}
+                                </Badge>
+                              </div>
+                              
+                              {/* 标签和分类 */}
+                              <div className="flex flex-wrap gap-2 mb-2">
+                                {article.category && <Badge variant="outline">{article.category}</Badge>}
+                                {article.tags?.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
+                              </div>
+                              
+                              {/* 网盘链接 */}
+                              {article.cloudLinks && article.cloudLinks.length > 0 && <div className="flex flex-wrap gap-2 mb-2">
+                                  {article.cloudLinks.map((link, index) => <Badge key={index} variant="outline" className="flex items-center gap-1">
+                                      <Link className="w-3 h-3" />
+                                      {link.name}
+                                    </Badge>)}
+                                </div>}
+                              
+                              {/* 数据统计 */}
+                              <div className="flex space-x-4 text-sm text-gray-500">
+                                <span>展示阅读: {article.views}</span>
+                                <span>真实阅读: {article.realViews}</span>
+                                <span>点赞: {article.likes}</span>
+                                <span>创建时间: {article.createTime}</span>
+                              </div>
+                            </div>
+                            
+                            {/* 操作按钮 */}
+                            <div className="flex space-x-2">
+                              <Button variant={article.isDaily ? "default" : "outline"} size="sm" onClick={() => handleSetDaily(article.id)}>
+                                {article.isDaily ? '取消推荐' : '设为推荐'}
+                              </Button>
+                              <Button variant="outline" size="sm" onClick={() => handleEditArticle(article)}>
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button variant="outline" size="sm" onClick={() => handleDeleteArticle(article.id)}>
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>)}
+                  </div>
                 </div>
               </CardContent>
             </Card>
