@@ -21,6 +21,50 @@ export default function Profile(props) {
     points: 0,
     adFreeCoupons: 0
   });
+
+  // 从数据库加载用户信息
+  useEffect(() => {
+    const loadUserInfo = async () => {
+      try {
+        const currentUser = props.$w.auth.currentUser;
+        if (currentUser && currentUser.userId) {
+          const tcb = await props.$w.cloud.getCloudInstance();
+          const db = tcb.database();
+          const result = await db.collection('users').where({
+            _openid: currentUser.userId
+          }).get();
+          if (result.data && result.data.length > 0) {
+            const userData = result.data[0];
+            setUserInfo({
+              name: userData.name || currentUser.name || '用户',
+              avatar: userData.avatar || currentUser.avatarUrl || '',
+              isLoggedIn: true,
+              isVip: userData.isVip || false,
+              vipExpireAt: userData.vipExpireAt ? new Date(userData.vipExpireAt) : null,
+              points: userData.points || 0,
+              adFreeCoupons: userData.adFreeCoupons || 0
+            });
+          } else {
+            // 如果用户不存在，创建新用户记录
+            await db.collection('users').add({
+              data: {
+                name: currentUser.name || '用户',
+                avatar: currentUser.avatarUrl || '',
+                isLoggedIn: true,
+                isVip: false,
+                vipExpireAt: null,
+                points: 0,
+                adFreeCoupons: 0
+              }
+            });
+          }
+        }
+      } catch (error) {
+        console.error('加载用户信息失败:', error);
+      }
+    };
+    loadUserInfo();
+  }, []);
   const [vipCode, setVipCode] = useState('');
 
   // 模拟用户历史记录
@@ -109,7 +153,32 @@ export default function Profile(props) {
       // 计算VIP过期时间
       const expireTime = new Date(Date.now() + card.duration * 24 * 60 * 60 * 1000);
 
-      // 更新用户VIP状态
+      // 查找用户记录
+      const userResult = await db.collection('users').where({
+        _openid: userId
+      }).get();
+      if (userResult.data && userResult.data.length > 0) {
+        // 更新现有用户记录
+        await db.collection('users').doc(userResult.data[0]._id).update({
+          isVip: true,
+          vipExpireAt: expireTime.getTime()
+        });
+      } else {
+        // 创建新用户记录
+        await db.collection('users').add({
+          data: {
+            name: props.$w.auth.currentUser?.name || '用户',
+            avatar: props.$w.auth.currentUser?.avatarUrl || '',
+            isLoggedIn: true,
+            isVip: true,
+            vipExpireAt: expireTime.getTime(),
+            points: 0,
+            adFreeCoupons: 0
+          }
+        });
+      }
+
+      // 更新本地状态
       setUserInfo({
         ...userInfo,
         isVip: true,

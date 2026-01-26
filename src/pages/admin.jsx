@@ -1,5 +1,5 @@
 // @ts-ignore;
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 // @ts-ignore;
 import { useToast, Button, Input, Textarea, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Tabs, TabsContent, TabsList, TabsTrigger, Badge, Switch, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 // @ts-ignore;
@@ -500,28 +500,39 @@ export default function Admin(props) {
       adId: ''
     }
   });
-  const [vipKeys, setVipKeys] = useState([{
-    id: 1,
-    key: 'VIP20240125001',
-    duration: 30,
-    status: 'active',
-    user: '用户A',
-    activateTime: '2024-01-25'
-  }, {
-    id: 2,
-    key: 'VIP20240125002',
-    duration: 90,
-    status: 'inactive',
-    user: null,
-    activateTime: null
-  }, {
-    id: 3,
-    key: 'VIP20240125003',
-    duration: 365,
-    status: 'inactive',
-    user: null,
-    activateTime: null
-  }]);
+  const [vipKeys, setVipKeys] = useState([]);
+
+  // 从数据库加载卡密数据
+  useEffect(() => {
+    const loadVipCards = async () => {
+      try {
+        const tcb = await props.$w.cloud.getCloudInstance();
+        const db = tcb.database();
+        const result = await db.collection('vip_cards').orderBy('createdAt', 'desc').get();
+        if (result.data && result.data.length > 0) {
+          const cards = result.data.map((card, index) => ({
+            id: index + 1,
+            key: card.cardPassword,
+            duration: card.duration,
+            cardType: card.cardType,
+            status: card.status === '已使用' ? 'active' : card.status === '未使用' ? 'inactive' : 'disabled',
+            user: card.usedBy || null,
+            activateTime: card.usedAt ? new Date(card.usedAt).toLocaleDateString() : null,
+            cardNumber: card.cardNumber,
+            price: card.price,
+            externalLink: card.externalLink,
+            description: card.description
+          }));
+          setVipKeys(cards);
+        }
+      } catch (error) {
+        console.error('加载卡密数据失败:', error);
+        // 如果数据库中没有数据，使用空数组
+        setVipKeys([]);
+      }
+    };
+    loadVipCards();
+  }, []);
   const handleToggleAd = adType => {
     setAdSettings(prev => {
       if (!prev || !prev[adType]) {
@@ -645,10 +656,32 @@ export default function Admin(props) {
         externalLink: '',
         description: `${cardTypeMap[cardType]}会员，享受${duration}天VIP特权`
       }));
-      await db.collection('vip_cards').add({
-        data: cardsToInsert
-      });
-      setVipKeys([...vipKeys, ...newKeys]);
+
+      // 逐个插入数据库
+      for (const card of cardsToInsert) {
+        await db.collection('vip_cards').add({
+          data: card
+        });
+      }
+
+      // 重新加载卡密数据
+      const result = await db.collection('vip_cards').orderBy('createdAt', 'desc').get();
+      if (result.data && result.data.length > 0) {
+        const cards = result.data.map((card, index) => ({
+          id: index + 1,
+          key: card.cardPassword,
+          duration: card.duration,
+          cardType: card.cardType,
+          status: card.status === '已使用' ? 'active' : card.status === '未使用' ? 'inactive' : 'disabled',
+          user: card.usedBy || null,
+          activateTime: card.usedAt ? new Date(card.usedAt).toLocaleDateString() : null,
+          cardNumber: card.cardNumber,
+          price: card.price,
+          externalLink: card.externalLink,
+          description: card.description
+        }));
+        setVipKeys(cards);
+      }
       toast({
         title: '生成成功',
         description: `已生成 ${quantity} 张 ${cardType === 'monthly' ? '月卡' : cardType === 'quarterly' ? '季度卡' : cardType === 'halfyear' ? '半年卡' : '年卡'}（${duration}天）`
