@@ -563,7 +563,8 @@ export default function Admin(props) {
   };
   const [keyGeneration, setKeyGeneration] = useState({
     cardType: 'monthly',
-    quantity: 1
+    quantity: 1,
+    status: 'active'
   });
   // 生成随机卡密函数
   const generateRandomKey = () => {
@@ -583,7 +584,8 @@ export default function Admin(props) {
   const handleGenerateKeys = async () => {
     const {
       cardType,
-      quantity
+      quantity,
+      status = 'active'
     } = keyGeneration;
 
     // 根据卡密类型设置时长
@@ -623,7 +625,7 @@ export default function Admin(props) {
         key: generateRandomKey(),
         duration: duration,
         cardType: cardType,
-        status: 'inactive',
+        status: status || 'active',
         user: null,
         activateTime: null
       }));
@@ -651,7 +653,7 @@ export default function Admin(props) {
         cardType: cardTypeMap[cardType],
         duration: duration,
         price: priceMap[cardType],
-        status: '未使用',
+        status: status === 'active' ? '已使用' : '未使用',
         createdAt: Date.now(),
         externalLink: '',
         description: `${cardTypeMap[cardType]}会员，享受${duration}天VIP特权`
